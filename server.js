@@ -93,7 +93,6 @@ passport.use(new strategy.Twitter({
 		function afterSaving(err, user){
 			if(err) { 
 				console.log(err);
-				res.send(500);
 			}
 		}
         return done(null, profile);
@@ -155,7 +154,6 @@ io.on("connection", function(socket) {
         function afterSaving(err, news){
             if(err) { 
                 console.log(err);
-                res.send(500);
             }
 
             io.emit("newsfeed", JSON.stringify(news));
