@@ -7,12 +7,12 @@ exports.view = function(req, res) {
 	.exec(displayNewsFeed);
 
 	function displayNewsFeed(err, newsfeed_posts){
-		var data = {data: newsfeed_posts};
-    	res.render("chat", data);	
-
-    	if(err) { 
+		if(err) { 
 			console.log(err);
 			res.send(500);
-		}
+		} 
+
+		var data = {newsfeed: newsfeed_posts};
+    	res.render("chat", data);	
 	}
 };
