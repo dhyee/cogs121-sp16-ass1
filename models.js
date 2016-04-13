@@ -6,6 +6,14 @@ var UserSchema = new Mongoose.Schema({
     "username": String,
     "displayName": String,
     "photo": String
-})
+});
+
+var NewsFeedSchema = new Mongoose.Schema({
+	"user": String,
+	"userPhoto": String,
+	"message": String,
+	"posted": Date
+});
 
 exports.User = Mongoose.model('User', UserSchema);
+exports.NewsFeed = Mongoose.model('NewsFeed', NewsFeedSchema);

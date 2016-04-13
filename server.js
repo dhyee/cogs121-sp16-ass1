@@ -2,7 +2,7 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
-// const io = require("socket.io")(http);
+const io = require("socket.io")(http);
 const path = require("path");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
@@ -104,9 +104,8 @@ passport.use(new strategy.Twitter({
         	user.token = token;
         	user.username = profile.username;
         	user.displayName = profile.displayName;
-        	user.photo = profile.photos[0];
+        	user.photo = profile.photos[0].value;
         	user.save();
-
             return done(null, profile);
         });
     }
@@ -129,11 +128,41 @@ app.get("/chat", router.chat.view);
 app.get('/auth/twitter', router.twitter);
 app.get('/auth/twitter/callback', router.callback);
 app.get('/logout', router.logout);
-// io.use(function(socket, next) {
-//     session_middleware(socket.request, {}, next);
-// });
+io.use(function(socket, next) {
+    session_middleware(socket.request, {}, next);
+});
 
 /* TODO: Server-side Socket.io here */
+io.on("connection", function(socket) { 
+    console.log('a user connected');
+    socket.on('disconnect', function(){
+       console.log('user disconnected');
+    });
+
+    socket.on('newsfeed', function(msg){
+        //look for user in DB
+        var user = socket.request.session.passport.user;
+
+        //if user exists create a newsfeed
+        var newNewsFeed = new models.NewsFeed({
+            "user": user.username,
+            "userPhoto": user.photos[0].value,
+            "message": msg,
+            "posted": Date.now()
+        });
+        newNewsFeed.save(afterSaving);
+
+        function afterSaving(err, news){
+            if(err) { 
+                console.log(err);
+                res.send(500);
+            }
+
+            io.emit("newsfeed", JSON.stringify(news));
+        }
+
+    });
+});
 
 // Start Server
 http.listen(app.get("port"), function() {
